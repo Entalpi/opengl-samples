@@ -1,19 +1,49 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-#include <stdint.h>
-#include <stdlib.h> // calloc, free
-#include <stdbool.h>
-#include <math.h>
+#include "main.h"
 
-typedef struct { GLfloat x, y, z; } Point3;
-typedef struct { GLfloat r, g, b, a; } Color4;
-typedef struct {
-  Point3 position;
-  Color4 color;
-} Vertex;
-typedef struct { Vertex vertices[6]; } Quad;
+Cube new_cube(Color4 *colors) {
+  Cube cube;
+  Point3 a = new_point(-0.5f, 0.5f, 0.5f);
+  Point3 b = new_point(0.5f, 0.5f, 0.5f);
+  Point3 c = new_point(-0.5f, -0.5f, 0.5f);
+  Point3 d = new_point(0.5f, -0.5f, 0.5f);
+  Point3 e = new_point(-0.5f, 0.5f, -0.5f);
+  Point3 f = new_point(-0.5f, -0.5f, -0.5f);
+  Point3 g = new_point(0.5f, 0.5f, -0.5f);
+  Point3 h = new_point(0.5f, -0.5f, -0.5f);
+  Point3 vertices1[] = {a, b, c, d};
+  Quad quad1 = new_quad(vertices1, colors);
+  cube.quads[0] = quad1;
+  Point3 vertices2[] = {e, a, f, d};
+  Quad quad2 = new_quad(vertices2, colors);
+  cube.quads[1] = quad2;
+  Point3 vertices3[] = {b, g, d, h};
+  Quad quad3 = new_quad(vertices3, colors);
+  cube.quads[2] = quad3;
+  Point3 vertices4[] = {g, e, h, f};
+  Quad quad4 = new_quad(vertices4, colors);
+  cube.quads[3] = quad4;
+  Point3 vertices5[] = {e, g, a, b};
+  Quad quad5 = new_quad(vertices5, colors);
+  cube.quads[4] = quad5;
+  Point3 vertices6[] = {c, d, f, h};
+  Quad quad6 = new_quad(vertices6, colors);
+  cube.quads[5] = quad6;
+  return cube;
+}
+
+GLfloat *cube_to_floats(Cube *cube) {
+  GLfloat *cube_floats = calloc(1, sizeof(Quad) * 6);
+  for (size_t i = 0; i < 6; i++) {
+    Quad quad = cube->quads[i];
+    GLfloat *quad_floats = quad_to_floats(&quad);
+    int k = 0;
+    for (size_t j = i * sizeof(Quad); j < sizeof(Quad); j++) {
+      cube_floats[j] = quad_floats[k];
+      k++;
+    }
+  }
+  return cube_floats;
+}
 
 Vertex new_vertex(Point3 point, Color4 color) {
   Vertex vertice;
@@ -32,19 +62,19 @@ Quad new_quad(Point3 *points, Color4 *colors) {
   Point3 b = points[1];
   Point3 c = points[2];
   Point3 d = points[3];
-  quad.vertices[0] = new_vertex(a, colors[0]);
-  quad.vertices[1] = new_vertex(b, colors[1]);
-  quad.vertices[2] = new_vertex(c, colors[3]);
-  quad.vertices[3] = new_vertex(a, colors[0]);
-  quad.vertices[4] = new_vertex(c, colors[3]);
-  quad.vertices[5] = new_vertex(d, colors[2]);
+  quad.vertices[0] = new_vertex(d, colors[0]);
+  quad.vertices[1] = new_vertex(c, colors[1]);
+  quad.vertices[2] = new_vertex(a, colors[3]);
+  quad.vertices[3] = new_vertex(d, colors[0]);
+  quad.vertices[4] = new_vertex(a, colors[3]);
+  quad.vertices[5] = new_vertex(b, colors[2]);
   return quad;
 }
 
 // Converts a quad to vertices
 // 1 quad = 2 triangles = 6 vertices = 4 points & 4 colors
 GLfloat *quad_to_floats(Quad *quad) {
-  float *floats = calloc(1, 6 * sizeof(Vertex));
+  GLfloat *floats = calloc(1, 6 * sizeof(Vertex));
   int j = 0;
   for (size_t i = 0; i < 6 * 7; i += 7) {
     Vertex vertex = quad->vertices[j];
@@ -79,11 +109,6 @@ Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
   color.a = a;
   return color;
 }
-
-Color4 new_color_red() { return new_color(1.0f, 0.0f, 0.0f, 1.0f); }
-Color4 new_color_blue() { return new_color(0.0f, 1.0f, 0.0f, 1.0f); }
-Color4 new_color_green() { return new_color(0.0f, 0.0f, 1.0f, 1.0f); }
-Color4 new_color_yellow() { return new_color(1.0f, 1.0f, 0.0f, 1.0f); }
 
 // Assumes the file exists and will seg. fault otherwise.
 const GLchar *load_shader_source(char *filename) {
@@ -143,23 +168,21 @@ int main() {
   glewExperimental = true;
   glewInit();
 
-  Point3 points[] = {new_point(-0.5f, 0.5f, 0.0f),
-                     new_point(-0.5f, -0.5f, 0.0f),
-                     new_point(0.5f, -0.5f, 0.0f), new_point(0.5f, 0.5f, 0.0f)};
   Color4 colors[] = {new_color_red(), new_color_green(), new_color_blue(),
                      new_color_yellow()};
 
-  Quad quad = new_quad(points, colors);
-
-  GLfloat *vertices = quad_to_floats(&quad);
+  Cube cube = new_cube(colors);
 
   GLuint VBO;                         // VBO - vertex buffer object
   glGenBuffers(1, &VBO);              // generate a 'name for the object'
   glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind/make VBO the active object
-
-  printf("Quad:%lu \n", sizeof(quad));
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quad), vertices,
-               GL_STATIC_DRAW); // upload data to VBO to OpenGL
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Cube), NULL,
+               GL_STATIC_DRAW);    // reserve a large buffer for cube quads
+  for (size_t i = 0; i < 6; i++) { // upload all the cubes quads
+    Quad quad = cube.quads[i];
+    GLfloat *quad_data = quad_to_floats(&quad);
+    glBufferSubData(GL_ARRAY_BUFFER, i * sizeof(Quad), sizeof(Quad), quad_data);
+  }
 
   const GLchar *vertexShaderSource = load_shader_source("vertex-shader.glsl");
   GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -234,7 +257,7 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     transMat = transformation_matrix_z(theta);
     glUniformMatrix3fv(trans, 1, GL_TRUE, transMat);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
     SDL_GL_SwapWindow(window);
   }
 
