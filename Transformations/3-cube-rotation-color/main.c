@@ -13,7 +13,7 @@ Cube new_cube(Color4 *colors) {
   Point3 vertices1[] = {a, b, c, d};
   Quad quad1 = new_quad(vertices1, colors);
   cube.quads[0] = quad1;
-  Point3 vertices2[] = {e, a, f, d};
+  Point3 vertices2[] = {e, a, f, c};
   Quad quad2 = new_quad(vertices2, colors);
   cube.quads[1] = quad2;
   Point3 vertices3[] = {b, g, d, h};
@@ -278,6 +278,9 @@ int main() {
     }
     // Draw the object
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_CULL_FACE); // cull face
+    glCullFace(GL_BACK);    // cull back face
+    glFrontFace(GL_CW);     // GL_CCW for counter clock-wise
     transMat_x = transformation_matrix_x(theta_x);
     glUniformMatrix3fv(transform_x, 1, GL_TRUE, transMat_x);
     transMat_y = transformation_matrix_y(theta_y);
