@@ -231,8 +231,10 @@ int main() {
                         (const void *)offsetof(Vertex, color));
   glEnableVertexAttribArray(colorAttrib);
 
-  GLuint trans = glGetUniformLocation(shaderProgram, "trans");
-  printf("Trans Mat.: %u\n", trans);
+  GLuint transform_x = glGetUniformLocation(shaderProgram, "transform_x");
+  GLuint transform_y = glGetUniformLocation(shaderProgram, "transform_y");
+  GLuint transform_z = glGetUniformLocation(shaderProgram, "transform_z");
+  printf("Trans Mats.: %u %u %u\n", transform_x, transform_y, transform_z);
   // z <== x, x <== y, y <== z
   GLfloat *testMat = transformation_matrix_x(90.0f);
   for (size_t i = 0; i < 9; i++) {
@@ -243,25 +245,52 @@ int main() {
   }
 
   bool DONE = false;
-  float theta = 0.0f;
-  GLfloat *transMat;
+  float theta_x = 0.0f;
+  float theta_y = 0.0f;
+  float theta_z = 0.0f;
+  GLfloat *transMat_x;
+  GLfloat *transMat_y;
+  GLfloat *transMat_z;
   while (!DONE) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
+      switch (event.type) {
+      case SDL_KEYDOWN:
+        switch (event.key.keysym.sym) {
+        case SDLK_LEFT:
+          theta_x -= 6.0f;
+          break;
+        case SDLK_RIGHT:
+          theta_x += 6.0f;
+          break;
+        case SDLK_UP:
+          theta_y -= 6.0f;
+          break;
+        case SDLK_DOWN:
+          theta_y += 6.0f;
+          break;
+        }
+        break;
+      case SDL_QUIT:
         DONE = true;
+        break;
       }
     }
-    theta = theta + 1.0f;
     // Draw the object
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    transMat = transformation_matrix_z(theta);
-    glUniformMatrix3fv(trans, 1, GL_TRUE, transMat);
+    transMat_x = transformation_matrix_x(theta_x);
+    glUniformMatrix3fv(transform_x, 1, GL_TRUE, transMat_x);
+    transMat_y = transformation_matrix_y(theta_y);
+    glUniformMatrix3fv(transform_y, 1, GL_TRUE, transMat_y);
+    transMat_z = transformation_matrix_z(theta_z);
+    glUniformMatrix3fv(transform_z, 1, GL_TRUE, transMat_z);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     SDL_GL_SwapWindow(window);
   }
 
-  free(transMat);
+  free(transMat_x);
+  free(transMat_y);
+  free(transMat_z);
   glDeleteVertexArrays(1, &VAO);
   glDeleteBuffers(1, &VBO);
   SDL_GL_DeleteContext(context);
