@@ -172,6 +172,7 @@ int main() {
                      new_color_yellow()};
 
   Cube cube = new_cube(colors);
+  printf("%lu \n", sizeof(cube.quads));
 
   GLuint VBO;                         // VBO - vertex buffer object
   glGenBuffers(1, &VBO);              // generate a 'name for the object'
