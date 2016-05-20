@@ -249,13 +249,24 @@ int main() {
   glBindTexture(GL_TEXTURE_2D, texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
                   GL_REPEAT); // tex.coords (s, t, r) == (x, y, z)
-  // Black/white checkerboard
-  GLfloat pixels[] = {0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-                      0.0f, 1.0f, 1.0f, 0.0f, 0.0f};
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  IMG_Init(IMG_INIT_PNG); // init sdl2_image
+  SDL_Surface *image = IMG_Load("retro.png");
+  int width = image->w;
+  int height = image->h;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, image->pixels);
+  // https://wiki.libsdl.org/SDL_PixelFormatEnum#type
+  printf("W: %i  H: %i Format: %u\n", width, height,
+         SDL_PIXELTYPE(image->format->format));
 
   GLuint texAttrib = glGetAttribLocation(shaderProgram, "vTexcoord");
-  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(pixels), 0);
+  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(texAttrib);
 
   bool DONE = false;
@@ -305,6 +316,7 @@ int main() {
     SDL_GL_SwapWindow(window);
   }
 
+  IMG_Quit();
   free(transMat_x);
   free(transMat_y);
   free(transMat_z);

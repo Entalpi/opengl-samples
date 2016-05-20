@@ -9,6 +9,8 @@
 #include <stdlib.h> // calloc, free
 #include <stdbool.h>
 #include <math.h>
+// #include "libs/SOIL.h"
+#include <SDL2/SDL_image.h>
 
 typedef struct { GLfloat x, y, z; } Point3;
 typedef struct { GLfloat x, y; } Point2;
