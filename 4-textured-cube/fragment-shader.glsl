@@ -7,6 +7,6 @@ in vec2 fTexcoord;   // passthrough shading for interpolated textures
 uniform sampler2D tex;
 
 void main() {
-  outColor = texture(tex, fTexcoord); //* fColor;
-  // outColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  // outColor = texture(tex, fTexcoord); //* fColor;
+  outColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }

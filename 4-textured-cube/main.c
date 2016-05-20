@@ -62,21 +62,19 @@ Quad new_quad(Point3 *points, Color4 *colors) {
   Point3 b = points[1];
   Point3 c = points[2];
   Point3 d = points[3];
-  quad.vertices[0] = new_vertex(d, colors[0]);
-  quad.vertices[1] = new_vertex(c, colors[1]);
-  quad.vertices[2] = new_vertex(a, colors[3]);
-  quad.vertices[3] = new_vertex(d, colors[0]);
-  quad.vertices[4] = new_vertex(a, colors[3]);
-  quad.vertices[5] = new_vertex(b, colors[2]);
+  quad.vertices[0] = new_vertex(a, colors[0]);
+  quad.vertices[1] = new_vertex(b, colors[1]);
+  quad.vertices[2] = new_vertex(c, colors[2]);
+  quad.vertices[3] = new_vertex(d, colors[3]);
   return quad;
 }
 
 // Converts a quad to vertices
-// 1 quad = 2 triangles = 6 vertices = 4 points & 4 colors
+// 1 quad = 2 triangles => 4 vertices = 4 points & 4 colors
 GLfloat *quad_to_floats(Quad *quad) {
-  GLfloat *floats = calloc(1, 6 * sizeof(Vertex));
+  GLfloat *floats = calloc(1, 4 * sizeof(Vertex));
   int j = 0;
-  for (size_t i = 0; i < 6 * 7; i += 7) {
+  for (size_t i = 0; i < 4 * 7; i += 7) {
     Vertex vertex = quad->vertices[j];
     floats[i] = vertex.position.x;
     floats[i + 1] = vertex.position.y;
@@ -269,6 +267,14 @@ int main() {
   glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(texAttrib);
 
+  GLfloat indices[] = {3, 2, 0, 3, 1, 0};
+  GLuint EBO;
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  printf("Size indices: %lu\n", sizeof(indices));
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
   bool DONE = false;
   float theta_x = 0.0f;
   float theta_y = 0.0f;
@@ -312,7 +318,8 @@ int main() {
     glUniformMatrix3fv(transform_y, 1, GL_TRUE, transMat_y);
     transMat_z = transformation_matrix_z(theta_z);
     glUniformMatrix3fv(transform_z, 1, GL_TRUE, transMat_z);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     SDL_GL_SwapWindow(window);
   }
 
