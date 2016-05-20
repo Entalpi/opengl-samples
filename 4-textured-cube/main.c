@@ -267,7 +267,8 @@ int main() {
   glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(texAttrib);
 
-  GLfloat indices[] = {3, 2, 0, 3, 1, 0};
+  // GLuint indices[] = {3, 2, 0, 3, 1, 0};
+  GLuint indices[] = {2, 0, 1, 2, 1, 3};
   GLuint EBO;
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -318,7 +319,8 @@ int main() {
     glUniformMatrix3fv(transform_y, 1, GL_TRUE, transMat_y);
     transMat_z = transformation_matrix_z(theta_z);
     glUniformMatrix3fv(transform_z, 1, GL_TRUE, transMat_z);
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    // GOTTA BIND THE VAO TO TELL OPENGL WHERE THE INDICES ARE FROM
+    glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     SDL_GL_SwapWindow(window);
   }
