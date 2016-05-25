@@ -21,7 +21,7 @@ typedef struct {
   // Point2 texCoord;
 } Vertex;
 typedef struct { Vertex vertices[4]; } Quad;
-typedef struct { Quad quads[6]; } Cube;
+typedef struct { Quad quads[2]; } Cube;
 
 Cube new_cube(Color4 *colors);
 Vertex new_vertex(Point3 point, Color4 color);

@@ -2,32 +2,21 @@
 
 Cube new_cube(Color4 *colors) {
   Cube cube;
-  Point3 a = new_point(-0.5f, 0.5f, 0.5f);
-  Point3 b = new_point(0.5f, 0.5f, 0.5f);
-  Point3 c = new_point(-0.5f, -0.5f, 0.5f);
-  Point3 d = new_point(0.5f, -0.5f, 0.5f);
-  Point3 e = new_point(-0.5f, 0.5f, -0.5f);
-  Point3 f = new_point(-0.5f, -0.5f, -0.5f);
-  Point3 g = new_point(0.5f, 0.5f, -0.5f);
-  Point3 h = new_point(0.5f, -0.5f, -0.5f);
+  Point3 a = new_point(-0.5f, -0.5f, 0.5f);
+  Point3 b = new_point(0.5f, -0.5f, 0.5f);
+  Point3 c = new_point(0.5f, 0.5f, 0.5f);
+  Point3 d = new_point(-0.5f, 0.5f, 0.5f);
   Point3 vertices1[] = {a, b, c, d};
   Quad quad1 = new_quad(vertices1, colors);
   cube.quads[0] = quad1;
-  Point3 vertices2[] = {e, a, f, c};
+
+  Point3 e = new_point(-0.5f, -0.5f, -0.5f);
+  Point3 f = new_point(0.5f, -0.5f, -0.5f);
+  Point3 g = new_point(0.5f, 0.5f, -0.5f);
+  Point3 h = new_point(-0.5f, 0.5f, -0.5f);
+  Point3 vertices2[] = {e, f, g, h};
   Quad quad2 = new_quad(vertices2, colors);
   cube.quads[1] = quad2;
-  Point3 vertices3[] = {b, g, d, h};
-  Quad quad3 = new_quad(vertices3, colors);
-  cube.quads[2] = quad3;
-  Point3 vertices4[] = {g, e, h, f};
-  Quad quad4 = new_quad(vertices4, colors);
-  cube.quads[3] = quad4;
-  Point3 vertices5[] = {e, g, a, b};
-  Quad quad5 = new_quad(vertices5, colors);
-  cube.quads[4] = quad5;
-  Point3 vertices6[] = {c, d, f, h};
-  Quad quad6 = new_quad(vertices6, colors);
-  cube.quads[5] = quad6;
   return cube;
 }
 
@@ -52,10 +41,10 @@ Vertex new_vertex(Point3 point, Color4 color) {
   return vertice;
 }
 
-// Input: 4 points, 4 colors (top pair, bottom pair)
-//  1 ----- 2   <-- Point & color pairs
+// Input: 4 points, 4 colors
+//  d ----- c   <-- Point & color pairs
 //  |       |
-//  3 ----- 4   1 = a, 2 = b, 3 = c, 4 = d
+//  a ----- b   0 = a, 1 = b, 2 = c, 3 = d
 Quad new_quad(Point3 *points, Color4 *colors) {
   Quad quad;
   Point3 a = points[0];
@@ -176,7 +165,7 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind/make VBO the active object
   glBufferData(GL_ARRAY_BUFFER, sizeof(Cube), NULL,
                GL_STATIC_DRAW);    // reserve a large buffer for cube quads
-  for (size_t i = 0; i < 6; i++) { // upload all the cubes quads
+  for (size_t i = 0; i < 2; i++) { // upload all the cubes quads
     Quad quad = cube.quads[i];
     GLfloat *quad_data = quad_to_floats(&quad);
     glBufferSubData(GL_ARRAY_BUFFER, i * sizeof(Quad), sizeof(Quad), quad_data);
@@ -257,6 +246,8 @@ int main() {
   SDL_Surface *image = IMG_Load("retro.png");
   int width = image->w;
   int height = image->h;
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, image->pixels);
   // https://wiki.libsdl.org/SDL_PixelFormatEnum#type
@@ -267,12 +258,22 @@ int main() {
   glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(texAttrib);
 
-  // GLuint indices[] = {3, 2, 0, 3, 1, 0};
-  GLuint indices[] = {2, 0, 1, 2, 1, 3};
+  GLuint indices[] = {// front
+                      0, 1, 2, 2, 3, 0,
+                      // right
+                      1, 5, 6, 6, 2, 1,
+                      // back
+                      7, 6, 5, 5, 4, 7,
+                      // left
+                      4, 0, 3, 3, 7, 4,
+                      // bot
+                      4, 5, 1, 1, 0, 4,
+                      // top
+                      3, 2, 6, 6, 7, 3};
+
   GLuint EBO;
   glGenBuffers(1, &EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  printf("Size indices: %lu\n", sizeof(indices));
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                GL_STATIC_DRAW);
 
@@ -312,7 +313,7 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE); // cull face
     glCullFace(GL_BACK);    // cull back face
-    glFrontFace(GL_CW);     // GL_CCW for counter clock-wise
+    glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
     transMat_x = transformation_matrix_x(theta_x);
     glUniformMatrix3fv(transform_x, 1, GL_TRUE, transMat_x);
     transMat_y = transformation_matrix_y(theta_y);
@@ -321,7 +322,7 @@ int main() {
     glUniformMatrix3fv(transform_z, 1, GL_TRUE, transMat_z);
     // GOTTA BIND THE VAO TO TELL OPENGL WHERE THE INDICES ARE FROM
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
     SDL_GL_SwapWindow(window);
   }
 
@@ -330,6 +331,7 @@ int main() {
   free(transMat_y);
   free(transMat_z);
   glDeleteVertexArrays(1, &VAO);
+
   glDeleteBuffers(1, &VBO);
   SDL_GL_DeleteContext(context);
   SDL_DestroyWindow(window);
