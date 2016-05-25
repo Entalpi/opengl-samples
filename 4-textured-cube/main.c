@@ -331,7 +331,6 @@ int main() {
   free(transMat_y);
   free(transMat_z);
   glDeleteVertexArrays(1, &VAO);
-
   glDeleteBuffers(1, &VBO);
   SDL_GL_DeleteContext(context);
   SDL_DestroyWindow(window);

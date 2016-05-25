@@ -6,10 +6,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <stdint.h>
-#include <stdlib.h> // calloc, free
+#include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
-// #include "libs/SOIL.h"
 #include <SDL2/SDL_image.h>
 
 typedef struct { GLfloat x, y, z; } Point3;
