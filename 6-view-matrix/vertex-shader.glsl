@@ -12,13 +12,15 @@ uniform mat4 transform_z; // the transformation matrix for z
 uniform mat4 transform_translation;
 uniform mat4 transform_scaling;
 
+uniform mat4 transform_perspective;
+
 in vec2 vTexcoord;   // passthrough shading for interpolated textures
 out vec2 fTexcoord;
 
 void main() {
   mat4 model = transform_translation * transform_scaling * transform_z * transform_y * transform_x;
   mat4 view  = mat4(1.0);
-  mat4 projection = mat4(1.0);
+  mat4 projection = transform_perspective;
   gl_Position = projection * view * model * vec4(position, 1.0f);
   fColor = vColor;
   fTexcoord = vTexcoord;
