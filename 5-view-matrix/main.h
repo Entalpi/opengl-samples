@@ -17,7 +17,6 @@ typedef struct { GLfloat r, g, b, a; } Color4;
 typedef struct {
   Point3 position;
   Color4 color;
-  // Point2 texCoord;
 } Vertex;
 typedef struct { Vertex vertices[4]; } Quad;
 typedef struct { Quad quads[2]; } Cube;
@@ -36,5 +35,7 @@ const GLchar *load_shader_source(char *filename);
 GLfloat *transformation_matrix_x(float theta);
 GLfloat *transformation_matrix_y(float theta);
 GLfloat *transformation_matrix_z(float theta);
+GLfloat *scaling_matrix(float scale);
+GLfloat *translation_matrix(float x, float y, float z);
 
 #endif

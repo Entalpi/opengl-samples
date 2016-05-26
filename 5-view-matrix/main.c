@@ -1,5 +1,25 @@
 #include "main.h"
 
+GLfloat *scaling_matrix(float scale) {
+  GLfloat tempMatrix[4][4] = {{scale, 0.0f, 0.0f, 0.0f},
+                              {0.0f, scale, 0.0f, 0.0f},
+                              {0.0f, 0.0f, scale, 0.0f},
+                              {0.0f, 0.0f, 0.0f, 1.0f}};
+  GLfloat *matrix = calloc(1, sizeof(tempMatrix));
+  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  return matrix;
+}
+
+GLfloat *translation_matrix(float x, float y, float z) {
+  GLfloat tempMatrix[4][4] = {{1.0f, 0.0f, 0.0f, x},
+                              {0.0f, 1.0f, 0.0f, y},
+                              {0.0f, 0.0f, 1.0f, z},
+                              {0.0f, 0.0f, 0.0f, 1.0f}};
+  GLfloat *matrix = calloc(1, sizeof(tempMatrix));
+  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  return matrix;
+}
+
 Cube new_cube(Color4 *colors) {
   Cube cube;
   Point3 a = new_point(-0.5f, -0.5f, 0.5f);
@@ -231,6 +251,11 @@ int main() {
     }
   }
 
+  GLuint transform_translation =
+      glGetUniformLocation(shaderProgram, "transform_translation");
+  GLuint transform_scaling =
+      glGetUniformLocation(shaderProgram, "transform_scaling");
+
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
@@ -277,12 +302,22 @@ int main() {
                GL_STATIC_DRAW);
 
   bool DONE = false;
+
   float theta_x = 0.0f;
   float theta_y = 0.0f;
   float theta_z = 0.0f;
   GLfloat *transMat_x;
   GLfloat *transMat_y;
   GLfloat *transMat_z;
+
+  GLfloat *transMat_scaling;
+  float scale = 1.0f;
+
+  GLfloat *transMat_translation;
+  float position_x = 0.0f;
+  float position_y = 0.0f;
+  float position_z = 0.0f;
+
   while (!DONE) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -301,6 +336,24 @@ int main() {
         case SDLK_DOWN:
           theta_x += 6.0f;
           break;
+        case SDLK_f:
+          scale -= 0.1f;
+          break;
+        case SDLK_g:
+          scale += 0.1f;
+          break;
+        case SDLK_a:
+          position_x -= 0.1f;
+          break;
+        case SDLK_s:
+          position_y -= 0.1f;
+          break;
+        case SDLK_d:
+          position_x += 0.1f;
+          break;
+        case SDLK_w:
+          position_y += 0.1f;
+          break;
         }
         break;
       case SDL_QUIT:
@@ -313,12 +366,21 @@ int main() {
     glEnable(GL_CULL_FACE); // cull face
     glCullFace(GL_BACK);    // cull back face
     glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
+
+    transMat_scaling = scaling_matrix(scale);
+    glUniformMatrix4fv(transform_scaling, 1, GL_TRUE, transMat_scaling);
+
+    transMat_translation =
+        translation_matrix(position_x, position_y, position_z);
+    glUniformMatrix4fv(transform_translation, 1, GL_TRUE, transMat_translation);
+
     transMat_x = transformation_matrix_x(theta_x);
     glUniformMatrix4fv(transform_x, 1, GL_TRUE, transMat_x);
     transMat_y = transformation_matrix_y(theta_y);
     glUniformMatrix4fv(transform_y, 1, GL_TRUE, transMat_y);
     transMat_z = transformation_matrix_z(theta_z);
     glUniformMatrix4fv(transform_z, 1, GL_TRUE, transMat_z);
+
     // GOTTA BIND THE VAO TO TELL OPENGL WHERE THE INDICES ARE FROM
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
