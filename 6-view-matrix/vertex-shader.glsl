@@ -17,7 +17,9 @@ out vec2 fTexcoord;
 
 void main() {
   mat4 model = transform_translation * transform_scaling * transform_z * transform_y * transform_x;
-  gl_Position = model * vec4(position, 1.0f);
+  mat4 view  = mat4(1.0);
+  mat4 projection = mat4(1.0);
+  gl_Position = projection * view * model * vec4(position, 1.0f);
   fColor = vColor;
   fTexcoord = vTexcoord;
 }
