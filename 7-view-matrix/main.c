@@ -1,5 +1,7 @@
 #include "main.h"
 
+// GLfloat *view_matrix(float x, float y, float z) { return NULL; }
+
 GLfloat *perspective_matrix(float z_near, float z_far, float fov) {
   float rad = M_PI / 180;
   float tanHalf = tan(fov * rad / 2);
@@ -266,11 +268,23 @@ int main() {
     }
   }
 
+  // Model
   GLuint transform_translation =
       glGetUniformLocation(shaderProgram, "transform_translation");
   GLuint transform_scaling =
       glGetUniformLocation(shaderProgram, "transform_scaling");
 
+  // View / camera space
+  GLuint transform_cam_x =
+      glGetUniformLocation(shaderProgram, "transform_cam_x");
+  GLuint transform_cam_y =
+      glGetUniformLocation(shaderProgram, "transform_cam_y");
+  GLuint transform_cam_z =
+      glGetUniformLocation(shaderProgram, "transform_cam_z");
+  GLuint transform_cam_translation =
+      glGetUniformLocation(shaderProgram, "transform_cam_translation");
+
+  // Projection
   GLuint transform_perspective =
       glGetUniformLocation(shaderProgram, "transform_perspective");
   GLfloat *transMat_perspective = perspective_matrix(1, -20, 45);
@@ -323,12 +337,12 @@ int main() {
 
   bool DONE = false;
 
-  float theta_x = 0.0f;
-  float theta_y = 0.0f;
-  float theta_z = 0.0f;
   GLfloat *transMat_x;
   GLfloat *transMat_y;
   GLfloat *transMat_z;
+  float theta_x = 0.0f;
+  float theta_y = 0.0f;
+  float theta_z = 0.0f;
 
   GLfloat *transMat_scaling;
   float scale = 1.0f;
@@ -337,6 +351,19 @@ int main() {
   float position_x = 0.0f;
   float position_y = 0.0f;
   float position_z = -2.0f;
+
+  // Camera
+  GLfloat *transMat_cam_x;
+  GLfloat *transMat_cam_y;
+  GLfloat *transMat_cam_z;
+  float theta_cam_x = 0.0f;
+  float theta_cam_y = 0.0f;
+  float theta_cam_z = 0.0f;
+
+  GLfloat *transMat_cam_translation;
+  float position_cam_x = 0.0f;
+  float position_cam_y = 0.0f;
+  float position_cam_z = 0.0f;
 
   while (!DONE) {
     SDL_Event event;
@@ -379,6 +406,37 @@ int main() {
           break;
         case SDLK_e:
           position_z += 0.1f;
+          break;
+        case SDLK_j:
+          position_cam_x -= 0.1f;
+          break;
+        case SDLK_l:
+          position_cam_x += 0.1f;
+          break;
+        case SDLK_k:
+          position_cam_y -= 0.1f;
+          break;
+        case SDLK_i:
+          position_cam_y += 0.1f;
+          break;
+        case SDLK_1:
+          theta_cam_x += 1.0f;
+          break;
+        case SDLK_2:
+          theta_cam_x -= 1.0f;
+          break;
+        case SDLK_3:
+          theta_cam_y += 1.0f;
+          break;
+        case SDLK_4:
+          theta_cam_y -= 1.0f;
+          break;
+        case SDLK_5:
+          theta_cam_z += 1.0f;
+          break;
+        case SDLK_6:
+          theta_cam_z -= 1.0f;
+          break;
         }
         break;
       case SDL_QUIT:
@@ -392,6 +450,7 @@ int main() {
     glCullFace(GL_BACK);    // cull back face
     glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
 
+    // Model
     transMat_scaling = scaling_matrix(scale);
     glUniformMatrix4fv(transform_scaling, 1, GL_TRUE, transMat_scaling);
 
@@ -405,6 +464,19 @@ int main() {
     glUniformMatrix4fv(transform_y, 1, GL_TRUE, transMat_y);
     transMat_z = transformation_matrix_z(theta_z);
     glUniformMatrix4fv(transform_z, 1, GL_TRUE, transMat_z);
+
+    // View
+    transMat_cam_translation =
+        translation_matrix(position_cam_x, position_cam_y, position_cam_z);
+    glUniformMatrix4fv(transform_cam_translation, 1, GL_TRUE,
+                       transMat_cam_translation);
+
+    transMat_cam_x = transformation_matrix_x(theta_cam_x);
+    glUniformMatrix4fv(transform_cam_x, 1, GL_TRUE, transMat_cam_x);
+    transMat_cam_y = transformation_matrix_y(theta_cam_y);
+    glUniformMatrix4fv(transform_cam_y, 1, GL_TRUE, transMat_cam_y);
+    transMat_cam_z = transformation_matrix_z(theta_cam_z);
+    glUniformMatrix4fv(transform_cam_z, 1, GL_TRUE, transMat_cam_z);
 
     // GOTTA BIND THE VAO TO TELL OPENGL WHERE THE INDICES ARE FROM
     glBindVertexArray(VAO);
