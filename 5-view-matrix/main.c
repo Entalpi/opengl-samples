@@ -110,33 +110,36 @@ const GLchar *load_shader_source(char *filename) {
 }
 
 // Transformation matrix for the y-plane
+GLfloat *transformation_matrix_x(float theta) {
+  float x = M_PI / 180;
+  GLfloat *matrix = calloc(1, sizeof(GLfloat) * 4 * 4);
+  GLfloat tempMatrix[4][4] = {{1.0f, 0.0f, 0.0f, 0.0f},
+                              {0.0f, cos(theta * x), -sin(theta * x), 0.0f},
+                              {0.0f, sin(theta * x), cos(theta * x), 0.0f},
+                              {0.0f, 0.0f, 0.0f, 1.0f}};
+  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  return matrix;
+}
+
 GLfloat *transformation_matrix_y(float theta) {
   float x = M_PI / 180;
-  GLfloat *matrix = calloc(1, sizeof(float) * 9);
-  GLfloat tempMatrix[3][3] = {{1.0f, 0.0f, 0.0f},
-                              {0.0f, cos(theta * x), -sin(theta * x)},
-                              {0.0f, sin(theta * x), cos(theta * x)}};
-  memccpy(matrix, tempMatrix, '\n', sizeof(float) * 9);
+  GLfloat *matrix = calloc(1, sizeof(GLfloat) * 4 * 4);
+  GLfloat tempMatrix[4][4] = {{cos(theta * x), 0.0f, sin(theta * x), 0.0f},
+                              {0.0f, 1.0f, 0.0f, 0.0f},
+                              {-sin(theta * x), 0.0f, cos(theta * x), 0.0f},
+                              {0.0f, 0.0f, 0.0f, 1.0f}};
+  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
   return matrix;
 }
 
 GLfloat *transformation_matrix_z(float theta) {
   float x = M_PI / 180;
-  GLfloat *matrix = calloc(1, sizeof(float) * 9);
-  GLfloat tempMatrix[3][3] = {{cos(theta * x), 0.0f, sin(theta * x)},
-                              {0.0f, 1.0f, 0.0f},
-                              {-sin(theta * x), 0.0f, cos(theta * x)}};
-  memccpy(matrix, tempMatrix, '\n', sizeof(float) * 9);
-  return matrix;
-}
-
-GLfloat *transformation_matrix_x(float theta) {
-  float x = M_PI / 180;
-  GLfloat *matrix = calloc(1, sizeof(float) * 9);
-  GLfloat tempMatrix[3][3] = {{cos(theta * x), -sin(theta * x), 0.0f},
-                              {sin(theta * x), cos(theta * x), 0.0f},
-                              {0.0f, 0.0f, 1.0f}};
-  memccpy(matrix, tempMatrix, '\n', sizeof(float) * 9);
+  GLfloat *matrix = calloc(1, sizeof(GLfloat) * 4 * 4);
+  GLfloat tempMatrix[4][4] = {{cos(theta * x), -sin(theta * x), 0.0f, 0.0f},
+                              {sin(theta * x), cos(theta * x), 0.0f, 0.0f},
+                              {0.0f, 0.0f, 1.0f, 0.0f},
+                              {0.0f, 0.0f, 0.0f, 1.0f}};
+  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
   return matrix;
 }
 
@@ -146,10 +149,7 @@ int main() {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-  SDL_Window *window =
-      SDL_CreateWindow("OpenGL with SDL2", 0, 0, 500, 500,
-                       SDL_WINDOW_OPENGL | SDL_WINDOWPOS_CENTERED);
-
+  SDL_Window *window = SDL_CreateWindow("", 0, 0, 500, 500, SDL_WINDOW_OPENGL);
   SDL_GLContext *context = SDL_GL_CreateContext(window);
 
   glewExperimental = true;
@@ -290,16 +290,16 @@ int main() {
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
-          theta_x -= 6.0f;
+          theta_z += 6.0f;
           break;
         case SDLK_RIGHT:
-          theta_x += 6.0f;
+          theta_z -= 6.0f;
           break;
         case SDLK_UP:
-          theta_y -= 6.0f;
+          theta_x -= 6.0f;
           break;
         case SDLK_DOWN:
-          theta_y += 6.0f;
+          theta_x += 6.0f;
           break;
         }
         break;
@@ -314,11 +314,11 @@ int main() {
     glCullFace(GL_BACK);    // cull back face
     glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
     transMat_x = transformation_matrix_x(theta_x);
-    glUniformMatrix3fv(transform_x, 1, GL_TRUE, transMat_x);
+    glUniformMatrix4fv(transform_x, 1, GL_TRUE, transMat_x);
     transMat_y = transformation_matrix_y(theta_y);
-    glUniformMatrix3fv(transform_y, 1, GL_TRUE, transMat_y);
+    glUniformMatrix4fv(transform_y, 1, GL_TRUE, transMat_y);
     transMat_z = transformation_matrix_z(theta_z);
-    glUniformMatrix3fv(transform_z, 1, GL_TRUE, transMat_z);
+    glUniformMatrix4fv(transform_z, 1, GL_TRUE, transMat_z);
     // GOTTA BIND THE VAO TO TELL OPENGL WHERE THE INDICES ARE FROM
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6 * 6, GL_UNSIGNED_INT, 0);
