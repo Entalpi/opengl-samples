@@ -1,15 +1,16 @@
 #include "main.h"
 
 GLfloat *perspective_matrix(float z_near, float z_far, float fov) {
-  float tanHalf = tan(fov / 2);
+  float rad = M_PI / 180;
+  float tanHalf = tan(fov * rad / 2);
   float a = 1 / tanHalf;
   float b = 1 / tanHalf;
-  float c = (z_far + z_near) / (z_far - z_near);
-  float d = (2 * z_far * z_near) / (z_far - z_near);
+  float c = -(z_far + z_near) / (z_far - z_near);
+  float d = -(2 * z_far * z_near) / (z_far - z_near);
   GLfloat tempMatrix[4][4] = {{a, 0.0f, 0.0f, 0.0f},
                               {0.0f, b, 0.0f, 0.0f},
-                              {0.0f, 0.0f, c, d},
-                              {0.0f, 0.0f, 1.0f, 0.0f}};
+                              {0.0f, 0.0f, c, -1.0f},
+                              {0.0f, 0.0f, d, 0.0f}};
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
   return matrix;
@@ -273,7 +274,7 @@ int main() {
   GLuint transform_perspective =
       glGetUniformLocation(shaderProgram, "transform_perspective");
   GLfloat *transMat_perspective = perspective_matrix(1, -20, 45);
-  glUniformMatrix4fv(transform_perspective, 1, GL_FALSE, transMat_perspective);
+  glUniformMatrix4fv(transform_perspective, 1, GL_TRUE, transMat_perspective);
 
   GLuint texture;
   glGenTextures(1, &texture);
@@ -335,7 +336,7 @@ int main() {
   GLfloat *transMat_translation;
   float position_x = 0.0f;
   float position_y = 0.0f;
-  float position_z = 0.0f;
+  float position_z = -2.0f;
 
   while (!DONE) {
     SDL_Event event;
@@ -389,7 +390,7 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_CULL_FACE); // cull face
     glCullFace(GL_BACK);    // cull back face
-    glFrontFace(GL_CW);     // GL_CCW for counter clock-wise
+    glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
 
     transMat_scaling = scaling_matrix(scale);
     glUniformMatrix4fv(transform_scaling, 1, GL_TRUE, transMat_scaling);
