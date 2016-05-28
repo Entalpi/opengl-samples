@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <SDL2/SDL_image.h>
+#include <assert.h>
 
 typedef struct { GLfloat x, y, z; } Point3;
 typedef struct { GLfloat x, y; } Point2;

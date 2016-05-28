@@ -158,6 +158,7 @@ Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
 
 // Assumes the file exists and will seg. fault otherwise.
 const GLchar *load_shader_source(char *filename) {
+  assert(filename != NULL);
   FILE *file = fopen(filename, "r");             // open
   fseek(file, 0L, SEEK_END);                     // find the end
   size_t size = ftell(file);                     // get the size in bytes
@@ -209,7 +210,7 @@ int main() {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   // TODO: Add support for dynamic resizing
-  SDL_Window *window = SDL_CreateWindow("", 0, 0, 500, 500, SDL_WINDOW_OPENGL);
+  SDL_Window *window = SDL_CreateWindow("", 0, 0, 750, 750, SDL_WINDOW_OPENGL);
   SDL_GLContext *context = SDL_GL_CreateContext(window);
 
   glewExperimental = true;
@@ -218,16 +219,25 @@ int main() {
   Color4 colors[] = {new_color_red(), new_color_green(), new_color_blue(),
                      new_color_yellow()};
 
-  Cube cubes[2] = {new_cube(colors), new_cube(colors)};
+  size_t numCubes = 10;
+  Cube cubes[numCubes];
+  for (size_t i = 0; i < numCubes; i++) {
+    Cube cube = new_cube(colors);
+    cube.position.x = arc4random_uniform(100) % 5;
+    cube.position.y = arc4random_uniform(100) % 5;
+    cube.position.z = arc4random_uniform(100) % 5;
+    cubes[i] = cube;
+    printf("x: %f y: %f z: %f\n", cube.position.x, cube.position.y,
+           cube.position.z);
+  }
 
   GLuint VBO;                         // VBO - vertex buffer object
   glGenBuffers(1, &VBO);              // generate a 'name for the object'
   glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind/make VBO the active object
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubes), NULL,
                GL_STATIC_DRAW); // reserve a large buffer for cube quads
-  size_t numQuads = sizeof(cubes[0].quads) / sizeof(Quad);
   // Upload only one cube's quads since the model is the same for all cubes
-  for (size_t i = 0; i < numQuads; i++) {
+  for (size_t i = 0; i < 2; i++) {
     Cube cube = cubes[0];
     Quad quad = cube.quads[i];
     GLfloat *quad_data = quad_to_floats(&quad);
@@ -410,52 +420,58 @@ int main() {
           scale += 0.1f;
           break;
         case SDLK_a:
-          cubes[0].position.x -= 0.1f;
+          cubes[0].position.x -= 0.2f;
           break;
         case SDLK_s:
-          cubes[0].position.y -= 0.1f;
+          cubes[0].position.y -= 0.2f;
           break;
         case SDLK_d:
-          cubes[0].position.x += 0.1f;
+          cubes[0].position.x += 0.2f;
           break;
         case SDLK_w:
-          cubes[0].position.y += 0.1f;
+          cubes[0].position.y += 0.2f;
           break;
         case SDLK_q:
-          cubes[0].position.z -= 0.1f;
+          cubes[0].position.z -= 0.2f;
           break;
         case SDLK_e:
-          cubes[0].position.z += 0.1f;
+          cubes[0].position.z += 0.2f;
           break;
         case SDLK_j:
-          position_cam_x -= 0.1f;
+          position_cam_x -= 0.2f;
           break;
         case SDLK_l:
-          position_cam_x += 0.1f;
+          position_cam_x += 0.2f;
           break;
         case SDLK_k:
-          position_cam_y -= 0.1f;
+          position_cam_y -= 0.2f;
           break;
         case SDLK_i:
-          position_cam_y += 0.1f;
+          position_cam_y += 0.2f;
+          break;
+        case SDLK_u:
+          position_cam_z -= 0.2f;
+          break;
+        case SDLK_o:
+          position_cam_z += 0.2f;
           break;
         case SDLK_1:
-          theta_cam_x += 1.0f;
+          theta_cam_x += 3.0f;
           break;
         case SDLK_2:
-          theta_cam_x -= 1.0f;
+          theta_cam_x -= 3.0f;
           break;
         case SDLK_3:
-          theta_cam_y += 1.0f;
+          theta_cam_y += 3.0f;
           break;
         case SDLK_4:
-          theta_cam_y -= 1.0f;
+          theta_cam_y -= 3.0f;
           break;
         case SDLK_5:
-          theta_cam_z += 1.0f;
+          theta_cam_z += 3.0f;
           break;
         case SDLK_6:
-          theta_cam_z -= 1.0f;
+          theta_cam_z -= 3.0f;
           break;
         }
         break;
@@ -466,6 +482,7 @@ int main() {
     }
     // Draw the object
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE); // cull face
     glCullFace(GL_BACK);    // cull back face
     glFrontFace(GL_CCW);    // GL_CCW for counter clock-wise
@@ -485,7 +502,7 @@ int main() {
     transMat_cam_z = transformation_matrix_z(theta_cam_z);
     glUniformMatrix4fv(transform_cam_z, 1, GL_TRUE, transMat_cam_z);
 
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < numCubes; i++) {
       Cube cube = cubes[i];
       // Model
       transMat_scaling = scaling_matrix(scale);
