@@ -19,7 +19,7 @@ GLfloat *perspective_matrix(float z_near, float z_far, float fov) {
                               {0.0f, 0.0f, c, -1.0f},
                               {0.0f, 0.0f, d, 0.0f}};
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
-  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
 }
 
@@ -29,7 +29,7 @@ GLfloat *scaling_matrix(float scale) {
                               {0.0f, 0.0f, scale, 0.0f},
                               {0.0f, 0.0f, 0.0f, 1.0f}};
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
-  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
 }
 
@@ -39,7 +39,7 @@ GLfloat *translation_matrix(float x, float y, float z) {
                               {0.0f, 0.0f, 1.0f, z},
                               {0.0f, 0.0f, 0.0f, 1.0f}};
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
-  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
 }
 
@@ -176,7 +176,7 @@ GLfloat *transformation_matrix_x(float theta) {
                               {0.0f, cos(theta * x), -sin(theta * x), 0.0f},
                               {0.0f, sin(theta * x), cos(theta * x), 0.0f},
                               {0.0f, 0.0f, 0.0f, 1.0f}};
-  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
 }
 
@@ -187,7 +187,7 @@ GLfloat *transformation_matrix_y(float theta) {
                               {0.0f, 1.0f, 0.0f, 0.0f},
                               {-sin(theta * x), 0.0f, cos(theta * x), 0.0f},
                               {0.0f, 0.0f, 0.0f, 1.0f}};
-  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
 }
 
@@ -198,7 +198,7 @@ GLfloat *transformation_matrix_z(float theta) {
                               {sin(theta * x), cos(theta * x), 0.0f, 0.0f},
                               {0.0f, 0.0f, 1.0f, 0.0f},
                               {0.0f, 0.0f, 0.0f, 1.0f}};
-  memccpy(matrix, tempMatrix, '\n', sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
 }
 
