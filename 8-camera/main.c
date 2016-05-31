@@ -1,5 +1,69 @@
 #include "main.h"
 
+Vec3 normalize(Vec3 vec) {
+  float length = sqrt(vec.x + vec.y + vec.z);
+  Vec3 result;
+  result.x = vec.x / length;
+  result.y = vec.y / length;
+  result.z = vec.z / length;
+  return result;
+}
+
+Vec3 camera_direction(const Camera cam) {
+  float rad = M_PI / 180;
+  Vec3 result;
+  result.y = sin(cam.pitch * rad);
+  return normalize(result);
+}
+
+GLfloat dot(Vec3 v, Vec3 u) { return v.x * u.x + v.y * u.y + v.z * u.z; }
+
+Vec3 vec_subtraction(Vec3 v, Vec3 u) {
+  v.x -= u.x;
+  v.y -= u.y;
+  v.z -= u.z;
+  return v;
+}
+
+Vec3 cross(Vec3 v, Vec3 u) {
+  Vec3 result;
+  result.x = v.y * u.z - v.z * u.y;
+  result.y = -(v.x * u.z - v.z * u.x);
+  result.z = v.x * u.y - v.y * u.x;
+  return result;
+}
+
+// Based on GLM's lookAt function, returns a 4x4 matrix of GLfloats
+/// @param eye Position of the camera
+/// @param center Position where the camera is looking at
+/// @param up Normalized up vector, how the camera is oriented,Typically (0, 0,
+/// 1)
+GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
+  Vec3 f = normalize(vec_subtraction(center, eye));
+  Vec3 s = normalize(cross(f, up));
+  Vec3 u = cross(s, f);
+  GLfloat tempMatrix[4][4];
+  tempMatrix[0][0] = s.x;
+  tempMatrix[0][1] = s.y;
+  tempMatrix[0][2] = s.z;
+  tempMatrix[0][3] = 1.0f;
+  tempMatrix[1][0] = u.x;
+  tempMatrix[1][1] = u.y;
+  tempMatrix[1][2] = u.z;
+  tempMatrix[1][3] = 1.0f;
+  tempMatrix[2][0] = -f.x;
+  tempMatrix[2][1] = -f.y;
+  tempMatrix[2][2] = -f.z;
+  tempMatrix[2][3] = 1.0f;
+  tempMatrix[3][0] = -dot(s, eye);
+  tempMatrix[3][1] = -dot(u, eye);
+  tempMatrix[3][2] = -dot(f, eye);
+  tempMatrix[3][3] = 1.0f;
+  GLfloat *matrix = calloc(1, sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
+  return matrix;
+}
+
 Point2 new_point2(GLfloat x, GLfloat y) {
   Point2 point;
   point.x = x;
@@ -395,26 +459,43 @@ int main() {
   float position_cam_y = 0.0f;
   float position_cam_z = 0.0f;
 
+  uint32_t last_tick = 0, current_tick, delta;
+
+  uint32_t speed = 5.0f;
+
+  Camera camera;
+
   while (!DONE) {
+    current_tick = SDL_GetTicks();
+    last_tick = current_tick;
+    delta = SDL_TICKS_PASSED(last_tick, current_tick);
+
+    speed = speed * delta;
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
+      case SDL_MOUSEMOTION:
+        printf("%d %d\n", event.motion.xrel, event.motion.yrel);
+        camera.pitch += event.motion.yrel;
+        camera.direction = camera_direction(camera);
+        break;
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
-          theta_z += 6.0f;
+          theta_z += speed;
           break;
         case SDLK_RIGHT:
-          theta_z -= 6.0f;
+          theta_z -= speed;
           break;
         case SDLK_UP:
-          theta_x -= 6.0f;
+          theta_x -= speed;
           break;
         case SDLK_DOWN:
-          theta_x += 6.0f;
+          theta_x += speed;
           break;
         case SDLK_f:
-          scale -= 0.1f;
+          scale -= speed;
           break;
         case SDLK_g:
           scale += 0.1f;
@@ -489,6 +570,7 @@ int main() {
 
     glClearColor(0.4f, 0.3f, 0.7f, 1.0f);
 
+    // TODO: Replace all the matrices with one single camera view matrix.
     // View
     transMat_cam_translation =
         translation_matrix(position_cam_x, position_cam_y, position_cam_z);

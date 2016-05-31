@@ -13,7 +13,9 @@
 #include <assert.h>
 
 typedef struct { GLfloat x, y, z; } Point3;
+typedef Point3 Vec3;
 typedef struct { GLfloat x, y; } Point2;
+typedef Point2 Vec2;
 typedef struct { GLfloat r, g, b, a; } Color4;
 typedef struct {
   Point3 position;
@@ -25,6 +27,11 @@ typedef struct {
   Quad quads[2];
   Point3 position; // Center point of the cube
 } Cube;
+
+typedef struct {
+  Vec3 direction;
+  GLfloat pitch;
+} Camera;
 
 Cube new_cube(Color4 *colors);
 Vertex new_vertex(Point3 point, Color4 color, Point2 texCoord);
