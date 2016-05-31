@@ -1,7 +1,7 @@
 #include "main.h"
 
 Vec3 normalize(Vec3 vec) {
-  float length = sqrt(vec.x + vec.y + vec.z);
+  float length = sqrt(pow(vec.x, 2) + pow(vec.y, 2) + pow(vec.z, 2));
   Vec3 result;
   result.x = vec.x / length;
   result.y = vec.y / length;
@@ -25,10 +25,18 @@ Vec3 vec_subtraction(Vec3 v, Vec3 u) {
   return v;
 }
 
+Vec3 vec_addition(Vec3 v, Vec3 u) {
+  v.x += u.x;
+  v.y += u.y;
+  v.z += u.z;
+  return v;
+}
+
+// result = v x u
 Vec3 cross(Vec3 v, Vec3 u) {
   Vec3 result;
   result.x = v.y * u.z - v.z * u.y;
-  result.y = -(v.x * u.z - v.z * u.x);
+  result.y = v.z * u.x - v.x * u.z;
   result.z = v.x * u.y - v.y * u.x;
   return result;
 }
@@ -57,7 +65,7 @@ GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
   tempMatrix[2][3] = 1.0f;
   tempMatrix[3][0] = -dot(s, eye);
   tempMatrix[3][1] = -dot(u, eye);
-  tempMatrix[3][2] = -dot(f, eye);
+  tempMatrix[3][2] = dot(f, eye);
   tempMatrix[3][3] = 1.0f;
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memcpy(matrix, tempMatrix, sizeof(tempMatrix));
@@ -135,7 +143,7 @@ Cube new_cube(Color4 *colors) {
   Quad quad2 = new_quad(vertices2, colors, texCoords2);
   cube.quads[1] = quad2;
 
-  cube.position = new_point3(0.0f, 0.0f, -2.0f); // Cube starts in front of cam.
+  cube.position = new_point3(0.0f, 0.0f, -4.0f); // Cube starts in front of cam.
 
   return cube;
 }
@@ -383,6 +391,8 @@ int main() {
   GLuint transform_cam_translation =
       glGetUniformLocation(shaderProgram, "transform_cam_translation");
 
+  GLuint camera_view = glGetUniformLocation(shaderProgram, "camera_view");
+
   // Projection
   GLuint transform_perspective =
       glGetUniformLocation(shaderProgram, "transform_perspective");
@@ -570,7 +580,6 @@ int main() {
 
     glClearColor(0.4f, 0.3f, 0.7f, 1.0f);
 
-    // TODO: Replace all the matrices with one single camera view matrix.
     // View
     transMat_cam_translation =
         translation_matrix(position_cam_x, position_cam_y, position_cam_z);
@@ -583,6 +592,14 @@ int main() {
     glUniformMatrix4fv(transform_cam_y, 1, GL_TRUE, transMat_cam_y);
     transMat_cam_z = transformation_matrix_z(theta_cam_z);
     glUniformMatrix4fv(transform_cam_z, 1, GL_TRUE, transMat_cam_z);
+
+    GLfloat camX = sin(SDL_GetTicks() / 1000) * 10.0f;
+    GLfloat camZ = cos(SDL_GetTicks() / 1000) * 10.0f;
+    Vec3 eye = {camX, 0.0f, camZ};    // cam position
+    Vec3 center = {0.0f, 0.0f, 0.0f}; // position of where the cam is looking
+    Vec3 up = {0.0, 1.0f, 0.0f};      // world up
+    GLfloat *transMat_camera_view = lookAt(eye, center, up);
+    glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
 
     for (size_t i = 0; i < numCubes; i++) {
       Cube cube = cubes[i];
