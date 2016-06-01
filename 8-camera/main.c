@@ -1,5 +1,27 @@
 #include "main.h"
 
+Vec3 camera_move_forward(Camera cam) {
+  Vec3 movement = vec_scalar_multiplication(cam.direction, cam.movement_speed);
+  return vec_addition(cam.position, movement);
+}
+
+Vec3 camera_move_backward(Camera cam) {
+  Vec3 movement = vec_scalar_multiplication(cam.direction, cam.movement_speed);
+  return vec_subtraction(cam.position, movement);
+}
+
+Vec3 camera_move_right(Camera cam) {
+  Vec3 movement = cross(cam.direction, cam.up);
+  return vec_subtraction(
+      cam.position, vec_scalar_multiplication(movement, cam.movement_speed));
+}
+
+Vec3 camera_move_left(Camera cam) {
+  Vec3 movement = cross(cam.direction, cam.up);
+  return vec_addition(cam.position,
+                      vec_scalar_multiplication(movement, cam.movement_speed));
+}
+
 Vec3 camera_direction(const Camera cam) {
   float rad = M_PI / 180;
   Vec3 result;
@@ -429,6 +451,7 @@ int main() {
   camera.position = eye;
   camera.direction = center;
   camera.up = up;
+  camera.movement_speed = 0.05f;
 
   while (!DONE) {
     current_tick = SDL_GetTicks();
@@ -444,6 +467,8 @@ int main() {
         camera.pitch += event.motion.xrel;
         camera.yaw += event.motion.yrel;
         camera.direction = camera_direction(camera);
+        printf("Camera position: x:%f y:%f z:%f\n", camera.direction.x,
+               camera.direction.y, camera.direction.z);
         break;
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
@@ -465,17 +490,28 @@ int main() {
         case SDLK_g:
           scale += 0.1f;
           break;
+        // case SDLK_a:
+        //   cubes[0].position.x -= 0.2f;
+        //   break;
+        // case SDLK_s:
+        //   cubes[0].position.y -= 0.2f;
+        //   break;
+        // case SDLK_d:
+        //   cubes[0].position.x += 0.2f;
+        //   break;
+        // case SDLK_w:
+        //   cubes[0].position.y += 0.2f;
+        case SDLK_w:
+          camera.position = camera_move_forward(camera);
+          break;
         case SDLK_a:
-          cubes[0].position.x -= 0.2f;
+          camera.position = camera_move_left(camera);
           break;
         case SDLK_s:
-          cubes[0].position.y -= 0.2f;
+          camera.position = camera_move_backward(camera);
           break;
         case SDLK_d:
-          cubes[0].position.x += 0.2f;
-          break;
-        case SDLK_w:
-          cubes[0].position.y += 0.2f;
+          camera.position = camera_move_right(camera);
           break;
         case SDLK_q:
           cubes[0].position.z -= 0.2f;

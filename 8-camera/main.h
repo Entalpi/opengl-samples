@@ -32,6 +32,7 @@ typedef struct {
   Vec3 up;
   GLfloat pitch;
   GLfloat yaw;
+  float movement_speed;
 } Camera;
 
 Cube new_cube(Color4 *colors);
