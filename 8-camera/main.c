@@ -1,44 +1,12 @@
 #include "main.h"
 
-Vec3 normalize(Vec3 vec) {
-  float length = sqrt(pow(vec.x, 2) + pow(vec.y, 2) + pow(vec.z, 2));
-  Vec3 result;
-  result.x = vec.x / length;
-  result.y = vec.y / length;
-  result.z = vec.z / length;
-  return result;
-}
-
 Vec3 camera_direction(const Camera cam) {
   float rad = M_PI / 180;
   Vec3 result;
+  result.x = cos(cam.pitch * rad);
   result.y = sin(cam.pitch * rad);
+  result.z = cos(cam.pitch * rad);
   return normalize(result);
-}
-
-GLfloat dot(Vec3 v, Vec3 u) { return v.x * u.x + v.y * u.y + v.z * u.z; }
-
-Vec3 vec_subtraction(Vec3 v, Vec3 u) {
-  v.x -= u.x;
-  v.y -= u.y;
-  v.z -= u.z;
-  return v;
-}
-
-Vec3 vec_addition(Vec3 v, Vec3 u) {
-  v.x += u.x;
-  v.y += u.y;
-  v.z += u.z;
-  return v;
-}
-
-// result = v x u
-Vec3 cross(Vec3 v, Vec3 u) {
-  Vec3 result;
-  result.x = v.y * u.z - v.z * u.y;
-  result.y = v.z * u.x - v.x * u.z;
-  result.z = v.x * u.y - v.y * u.x;
-  return result;
 }
 
 // Based on GLM's lookAt function, returns a 4x4 matrix of GLfloats
@@ -70,13 +38,6 @@ GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
-}
-
-Point2 new_point2(GLfloat x, GLfloat y) {
-  Point2 point;
-  point.x = x;
-  point.y = y;
-  return point;
 }
 
 GLfloat *perspective_matrix(float z_near, float z_far, float fov) {
@@ -211,14 +172,6 @@ GLfloat *quad_to_floats(Quad *quad) {
   return floats;
 }
 
-Point3 new_point3(GLfloat x, GLfloat y, GLfloat z) {
-  Point3 point;
-  point.x = x;
-  point.y = y;
-  point.z = z;
-  return point;
-}
-
 Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
   Color4 color;
   color.r = r;
@@ -295,9 +248,9 @@ int main() {
   Cube cubes[numCubes];
   for (size_t i = 0; i < numCubes; i++) {
     Cube cube = new_cube(colors);
-    cube.position.x = arc4random_uniform(100) % 5;
-    cube.position.y = arc4random_uniform(100) % 5;
-    cube.position.z = arc4random_uniform(100) % 5;
+    cube.position.x = arc4random_uniform(100) % 10;
+    cube.position.y = arc4random_uniform(100) % 10;
+    cube.position.z -= arc4random_uniform(100) % 10;
     cubes[i] = cube;
     printf("x: %f y: %f z: %f\n", cube.position.x, cube.position.y,
            cube.position.z);
@@ -488,6 +441,7 @@ int main() {
       case SDL_MOUSEMOTION:
         printf("%d %d\n", event.motion.xrel, event.motion.yrel);
         camera.pitch += event.motion.yrel;
+        camera.yaw += event.motion.xrel;
         camera.direction = camera_direction(camera);
         break;
       case SDL_KEYDOWN:
@@ -529,22 +483,22 @@ int main() {
           cubes[0].position.z += 0.2f;
           break;
         case SDLK_j:
-          position_cam_x -= 0.2f;
+          position_cam_x -= 0.5f;
           break;
         case SDLK_l:
-          position_cam_x += 0.2f;
+          position_cam_x += 0.5f;
           break;
         case SDLK_k:
-          position_cam_y -= 0.2f;
+          position_cam_y -= 0.5f;
           break;
         case SDLK_i:
-          position_cam_y += 0.2f;
+          position_cam_y += 0.5f;
           break;
         case SDLK_u:
-          position_cam_z -= 0.2f;
+          position_cam_z -= 0.5f;
           break;
         case SDLK_o:
-          position_cam_z += 0.2f;
+          position_cam_z += 0.5f;
           break;
         case SDLK_1:
           theta_cam_x += 3.0f;
