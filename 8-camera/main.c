@@ -3,9 +3,9 @@
 Vec3 camera_direction(const Camera cam) {
   float rad = M_PI / 180;
   Vec3 result;
-  result.x = cos(cam.pitch * rad);
+  result.x = cos(cam.pitch * rad) * cos(cam.yaw * rad);
   result.y = sin(cam.pitch * rad);
-  result.z = cos(cam.pitch * rad);
+  result.z = sin(cam.pitch * rad) * cos(cam.yaw * rad);
   return normalize(result);
 }
 
@@ -423,6 +423,12 @@ int main() {
   uint32_t speed = 5.0f;
 
   Camera camera;
+  Vec3 eye = {0.0f, 0.0f, 1.0f};     // cam position
+  Vec3 center = {0.0f, 0.0f, -1.0f}; // position of where the cam is looking
+  Vec3 up = {0.0, 1.0f, 0.0f};       // world up
+  camera.position = eye;
+  camera.direction = center;
+  camera.up = up;
 
   while (!DONE) {
     current_tick = SDL_GetTicks();
@@ -435,9 +441,8 @@ int main() {
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
       case SDL_MOUSEMOTION:
-        printf("%d %d\n", event.motion.xrel, event.motion.yrel);
-        camera.pitch += event.motion.yrel;
-        camera.yaw += event.motion.xrel;
+        camera.pitch += event.motion.xrel;
+        camera.yaw += event.motion.yrel;
         camera.direction = camera_direction(camera);
         break;
       case SDL_KEYDOWN:
@@ -535,12 +540,9 @@ int main() {
     transMat_cam_y = transformation_matrix_y(theta_cam_y);
     glUniformMatrix4fv(transform_cam_y, 1, GL_TRUE, transMat_cam_y);
 
-    GLfloat camX = sin(SDL_GetTicks() / 1000) * 10.0f;
-    GLfloat camZ = cos(SDL_GetTicks() / 1000) * 10.0f;
-    Vec3 eye = {camX, 0.0f, camZ};    // cam position
-    Vec3 center = {0.0f, 0.0f, 0.0f}; // position of where the cam is looking
-    Vec3 up = {0.0, 1.0f, 0.0f};      // world up
-    GLfloat *transMat_camera_view = lookAt(eye, center, up);
+    GLfloat *transMat_camera_view =
+        lookAt(camera.position, vec_addition(camera.position, camera.direction),
+               camera.up);
     glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
 
     for (size_t i = 0; i < numCubes; i++) {

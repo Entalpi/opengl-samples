@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {
   Vec3 direction;
   Vec3 position;
+  Vec3 up;
   GLfloat pitch;
   GLfloat yaw;
 } Camera;
