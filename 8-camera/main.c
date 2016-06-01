@@ -339,8 +339,6 @@ int main() {
       glGetUniformLocation(shaderProgram, "transform_cam_x");
   GLuint transform_cam_y =
       glGetUniformLocation(shaderProgram, "transform_cam_y");
-  GLuint transform_cam_z =
-      glGetUniformLocation(shaderProgram, "transform_cam_z");
   GLuint transform_cam_translation =
       glGetUniformLocation(shaderProgram, "transform_cam_translation");
 
@@ -412,10 +410,8 @@ int main() {
   // Camera
   GLfloat *transMat_cam_x;
   GLfloat *transMat_cam_y;
-  GLfloat *transMat_cam_z;
   float theta_cam_x = 0.0f;
   float theta_cam_y = 0.0f;
-  float theta_cam_z = 0.0f;
 
   GLfloat *transMat_cam_translation;
   float position_cam_x = 0.0f;
@@ -512,12 +508,6 @@ int main() {
         case SDLK_4:
           theta_cam_y -= 3.0f;
           break;
-        case SDLK_5:
-          theta_cam_z += 3.0f;
-          break;
-        case SDLK_6:
-          theta_cam_z -= 3.0f;
-          break;
         }
         break;
       case SDL_QUIT:
@@ -544,8 +534,6 @@ int main() {
     glUniformMatrix4fv(transform_cam_x, 1, GL_TRUE, transMat_cam_x);
     transMat_cam_y = transformation_matrix_y(theta_cam_y);
     glUniformMatrix4fv(transform_cam_y, 1, GL_TRUE, transMat_cam_y);
-    transMat_cam_z = transformation_matrix_z(theta_cam_z);
-    glUniformMatrix4fv(transform_cam_z, 1, GL_TRUE, transMat_cam_z);
 
     GLfloat camX = sin(SDL_GetTicks() / 1000) * 10.0f;
     GLfloat camZ = cos(SDL_GetTicks() / 1000) * 10.0f;
