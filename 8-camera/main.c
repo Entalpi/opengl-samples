@@ -22,8 +22,9 @@ Vec3 camera_move_left(Camera cam) {
                       vec_scalar_multiplication(movement, cam.movement_speed));
 }
 
-Vec3 camera_direction(const Camera cam) {
+Vec3 camera_direction(Camera cam) {
   float rad = M_PI / 180;
+  printf("Pitch: %f Yaw: %f\n", cam.pitch, cam.yaw);
   Vec3 result;
   result.x = cos(cam.pitch * rad) * cos(cam.yaw * rad);
   result.y = sin(cam.pitch * rad);
@@ -451,7 +452,7 @@ int main() {
   camera.position = eye;
   camera.direction = center;
   camera.up = up;
-  camera.movement_speed = 0.05f;
+  camera.movement_speed = 0.1f;
 
   while (!DONE) {
     current_tick = SDL_GetTicks();
@@ -473,16 +474,24 @@ int main() {
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
-          theta_z += speed;
+          // theta_z += speed;
+          camera.yaw += 0.1f;
+          camera.direction = camera_direction(camera);
           break;
         case SDLK_RIGHT:
-          theta_z -= speed;
+          // theta_z -= speed;
+          camera.yaw += 0.1f;
+          camera.direction = camera_direction(camera);
           break;
         case SDLK_UP:
-          theta_x -= speed;
+          // theta_x -= speed;
+          camera.pitch += 0.1f;
+          camera.direction = camera_direction(camera);
           break;
         case SDLK_DOWN:
-          theta_x += speed;
+          // theta_x += speed;
+          camera.pitch += 0.1f;
+          camera.direction = camera_direction(camera);
           break;
         case SDLK_f:
           scale -= speed;
