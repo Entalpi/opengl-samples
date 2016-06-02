@@ -42,8 +42,8 @@ Vec3 camera_direction(Camera cam) {
 /// @param center Position where the camera is looking at
 /// @param up Normalized up vector, how the camera is oriented,Typically (0, 0,
 /// 1) ROW MAJOR
-GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
-  Vec3 f = normalize(vec_subtraction(center, eye)); // 'forward'
+GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) { // FIXME: Does not quite work
+  Vec3 f = normalize(vec_subtraction(eye, center)); // 'forward'
   Vec3 s = normalize(cross(f, up));                 // 'right'
   Vec3 u = cross(s, f);                             // 'up'
   GLfloat tempMatrix[4][4];
@@ -61,7 +61,7 @@ GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
   tempMatrix[3][2] = 0.0f;
   tempMatrix[0][3] = -dot(s, eye);
   tempMatrix[1][3] = -dot(u, eye);
-  tempMatrix[2][3] = dot(f, eye); // GLM says no minus , other's say minus ...
+  tempMatrix[2][3] = -dot(f, eye); // GLM says no minus , other's say minus ...
   tempMatrix[3][3] = 1.0f;
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memcpy(matrix, tempMatrix, sizeof(tempMatrix));
@@ -471,10 +471,6 @@ int main() {
   camera.direction = center;
   camera.up = up;
   camera.movement_speed = 0.5f;
-  camera.yaw = -90.0f; // Yaw is initialized to -90.0 degrees since a yaw of 0.0
-                       // results in a direction vector pointing to the right
-                       // (due to how Eular angles work) so we initially rotate
-                       // a bit to the left.
 
   while (!DONE) {
     current_tick = SDL_GetTicks();
@@ -552,11 +548,6 @@ int main() {
     glClearColor(0.4f, 0.3f, 0.7f, 1.0f);
 
     // View
-    // GLfloat *transMat_camera_view =
-    //     lookAt(camera.position, vec_addition(camera.position,
-    //     camera.direction),
-    //            camera.up);
-    // glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
     GLfloat *transMat_camera_view =
         FPSViewRH(camera.position, camera.pitch, camera.yaw);
     glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
