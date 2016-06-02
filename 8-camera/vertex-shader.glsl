@@ -27,10 +27,11 @@ in vec2 vTexcoord;   // passthrough shading for interpolated textures
 out vec2 fTexcoord;
 
 void main() {
-  mat4 model = transform_translation * transform_scaling * transform_z * transform_y * transform_x;
+  mat4 model = transform_z * transform_y * transform_x * transform_translation * transform_scaling;
   mat4 view  = transform_cam_x * transform_cam_y * transform_cam_translation;
+  mat4 camera_space = camera_view;
   mat4 projection = transform_perspective;
-  gl_Position = projection * camera_view * model * vec4(position, 1.0f);
+  gl_Position = projection * camera_space * model * vec4(position, 1.0f);
   fColor = vColor;
   fTexcoord = vTexcoord;
 }

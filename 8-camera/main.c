@@ -36,27 +36,58 @@ Vec3 camera_direction(Camera cam) {
 /// @param eye Position of the camera
 /// @param center Position where the camera is looking at
 /// @param up Normalized up vector, how the camera is oriented,Typically (0, 0,
-/// 1)
+/// 1) ROW MAJOR
 GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
-  Vec3 f = normalize(vec_subtraction(center, eye));
-  Vec3 s = normalize(cross(f, up));
-  Vec3 u = cross(s, f);
+  Vec3 f = normalize(vec_subtraction(center, eye)); // 'forward'
+  Vec3 s = normalize(cross(f, up));                 // 'right'
+  Vec3 u = cross(s, f);                             // 'up'
   GLfloat tempMatrix[4][4];
   tempMatrix[0][0] = s.x;
   tempMatrix[0][1] = s.y;
   tempMatrix[0][2] = s.z;
-  tempMatrix[0][3] = 1.0f;
+  tempMatrix[0][3] = 0.0f;
   tempMatrix[1][0] = u.x;
   tempMatrix[1][1] = u.y;
   tempMatrix[1][2] = u.z;
-  tempMatrix[1][3] = 1.0f;
+  tempMatrix[1][3] = 0.0f;
   tempMatrix[2][0] = -f.x;
   tempMatrix[2][1] = -f.y;
   tempMatrix[2][2] = -f.z;
-  tempMatrix[2][3] = 1.0f;
+  tempMatrix[2][3] = 0.0f;
   tempMatrix[3][0] = -dot(s, eye);
   tempMatrix[3][1] = -dot(u, eye);
-  tempMatrix[3][2] = dot(f, eye);
+  tempMatrix[3][2] = dot(f, eye); // GLM says no minus , other's say minus ...
+  tempMatrix[3][3] = 1.0f;
+  GLfloat *matrix = calloc(1, sizeof(tempMatrix));
+  memcpy(matrix, tempMatrix, sizeof(tempMatrix));
+  return matrix;
+}
+
+GLfloat *FPSViewRH(Vec3 eye, float pitch, float yaw) {
+  float rad = M_PI / 180;
+  float cosPitch = cos(pitch * rad);
+  float sinPitch = sin(pitch * rad);
+  float cosYaw = cos(yaw * rad);
+  float sinYaw = sin(yaw * rad);
+  Vec3 xaxis = {cosYaw, 0, -sinYaw};
+  Vec3 yaxis = {sinYaw * sinPitch, cosPitch, cosYaw * sinPitch};
+  Vec3 zaxis = {sinYaw * cosPitch, -sinPitch, cosPitch * cosYaw};
+  GLfloat tempMatrix[4][4];
+  tempMatrix[0][0] = xaxis.x;
+  tempMatrix[0][1] = yaxis.x;
+  tempMatrix[0][2] = zaxis.x;
+  tempMatrix[0][3] = 0.0f;
+  tempMatrix[1][0] = yaxis.x;
+  tempMatrix[1][1] = yaxis.y;
+  tempMatrix[1][2] = yaxis.z;
+  tempMatrix[1][3] = 0.0f;
+  tempMatrix[2][0] = zaxis.x;
+  tempMatrix[2][1] = zaxis.y;
+  tempMatrix[2][2] = zaxis.z;
+  tempMatrix[2][3] = 0.0f;
+  tempMatrix[3][0] = -dot(xaxis, eye);
+  tempMatrix[3][1] = -dot(yaxis, eye);
+  tempMatrix[3][2] = -dot(zaxis, eye); // GLM says no minus , other's say minus
   tempMatrix[3][3] = 1.0f;
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memcpy(matrix, tempMatrix, sizeof(tempMatrix));
@@ -72,8 +103,8 @@ GLfloat *perspective_matrix(float z_near, float z_far, float fov) {
   float d = -(2 * z_far * z_near) / (z_far - z_near);
   GLfloat tempMatrix[4][4] = {{a, 0.0f, 0.0f, 0.0f},
                               {0.0f, b, 0.0f, 0.0f},
-                              {0.0f, 0.0f, c, -1.0f},
-                              {0.0f, 0.0f, d, 0.0f}};
+                              {0.0f, 0.0f, c, d},
+                              {0.0f, 0.0f, -1.0f, 0.0f}};
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memcpy(matrix, tempMatrix, sizeof(tempMatrix));
   return matrix;
@@ -371,7 +402,7 @@ int main() {
   GLuint transform_perspective =
       glGetUniformLocation(shaderProgram, "transform_perspective");
   GLfloat *transMat_perspective = perspective_matrix(1, -20, 45);
-  glUniformMatrix4fv(transform_perspective, 1, GL_TRUE, transMat_perspective);
+  glUniformMatrix4fv(transform_perspective, 1, GL_FALSE, transMat_perspective);
 
   GLuint texture;
   glGenTextures(1, &texture);
@@ -452,7 +483,7 @@ int main() {
   camera.position = eye;
   camera.direction = center;
   camera.up = up;
-  camera.movement_speed = 0.1f;
+  camera.movement_speed = 0.5f;
 
   while (!DONE) {
     current_tick = SDL_GetTicks();
@@ -465,32 +496,33 @@ int main() {
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
       case SDL_MOUSEMOTION:
-        camera.pitch += event.motion.xrel;
-        camera.yaw += event.motion.yrel;
-        camera.direction = camera_direction(camera);
-        printf("Camera position: x:%f y:%f z:%f\n", camera.direction.x,
-               camera.direction.y, camera.direction.z);
+        camera.pitch +=
+            event.motion.yrel; // These seem reversed for some reason
+        camera.yaw += event.motion.xrel;
+        // camera.direction = camera_direction(camera);
+        printf("Camera position: x:%f y:%f z:%f\n", camera.position.x,
+               camera.position.y, camera.position.z);
         break;
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
           // theta_z += speed;
-          camera.yaw += 0.1f;
+          camera.yaw -= 5.1f;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_RIGHT:
           // theta_z -= speed;
-          camera.yaw += 0.1f;
+          camera.yaw += 5.0f;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_UP:
           // theta_x -= speed;
-          camera.pitch += 0.1f;
+          camera.pitch += 5.1f;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_DOWN:
           // theta_x += speed;
-          camera.pitch += 0.1f;
+          camera.pitch -= 5.1f;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_f:
@@ -585,10 +617,18 @@ int main() {
     transMat_cam_y = transformation_matrix_y(theta_cam_y);
     glUniformMatrix4fv(transform_cam_y, 1, GL_TRUE, transMat_cam_y);
 
+    // GLfloat *transMat_camera_view =
+    //     lookAt(camera.position, vec_addition(camera.position,
+    //     camera.direction),
+    //            camera.up);
+    // glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
     GLfloat *transMat_camera_view =
-        lookAt(camera.position, vec_addition(camera.position, camera.direction),
-               camera.up);
+        FPSViewRH(camera.position, camera.pitch, camera.yaw);
     glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
+
+    // FIXME: There is something wrong with the view matrix. It is not rendering
+    // as from the camera position in the world.. It seems like the camera is
+    // fixed yet able to move about ..
 
     for (size_t i = 0; i < numCubes; i++) {
       Cube cube = cubes[i];
