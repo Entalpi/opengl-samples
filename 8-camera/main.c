@@ -513,19 +513,19 @@ int main() {
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
-          camera.yaw -= 5.0f * delta;
+          camera.yaw -= camera.movement_speed * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_RIGHT:
-          camera.yaw += 5.0f * delta;
+          camera.yaw += camera.movement_speed * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_UP:
-          camera.pitch += 5.0f * delta;
+          camera.pitch += camera.movement_speed * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_DOWN:
-          camera.pitch -= 5.0f * delta;
+          camera.pitch -= camera.movement_speed * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_f:
