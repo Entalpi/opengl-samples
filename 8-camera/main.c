@@ -77,12 +77,12 @@ GLfloat *FPSViewRH(Vec3 eye, float pitch, float yaw) {
   tempMatrix[0][1] = yaxis.x;
   tempMatrix[0][2] = zaxis.x;
   tempMatrix[0][3] = 0.0f;
-  tempMatrix[1][0] = yaxis.x;
+  tempMatrix[1][0] = xaxis.y;
   tempMatrix[1][1] = yaxis.y;
-  tempMatrix[1][2] = yaxis.z;
+  tempMatrix[1][2] = zaxis.y;
   tempMatrix[1][3] = 0.0f;
-  tempMatrix[2][0] = zaxis.x;
-  tempMatrix[2][1] = zaxis.y;
+  tempMatrix[2][0] = xaxis.z;
+  tempMatrix[2][1] = yaxis.z;
   tempMatrix[2][2] = zaxis.z;
   tempMatrix[2][3] = 0.0f;
   tempMatrix[3][0] = -dot(xaxis, eye);
