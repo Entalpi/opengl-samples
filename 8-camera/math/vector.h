@@ -50,9 +50,9 @@ Vec3 vec_addition(Vec3 v, Vec3 u) {
 }
 
 Vec3 vec_scalar_multiplication(Vec3 v, float s) {
-  v.x = v.x * s;
-  v.y = v.y * s;
-  v.z = v.z * s;
+  v.x *= s;
+  v.y *= s;
+  v.z *= s;
   return v;
 }
 

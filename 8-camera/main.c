@@ -24,11 +24,17 @@ Vec3 camera_move_left(Camera cam) {
 
 Vec3 camera_direction(Camera cam) {
   float rad = M_PI / 180;
-  printf("Pitch: %f Yaw: %f\n", cam.pitch, cam.yaw);
+  float pitch = cam.pitch;
+  // if (pitch > 89.0f) {
+  //   pitch = 89.0f;
+  // } else if (pitch < -89.0f) {
+  //   pitch = -89.0f;
+  // }
+  printf("Pitch: %f Yaw: %f\n", pitch, cam.yaw);
   Vec3 result;
-  result.x = cos(cam.pitch * rad) * cos(cam.yaw * rad);
-  result.y = sin(cam.pitch * rad);
-  result.z = sin(cam.pitch * rad) * cos(cam.yaw * rad);
+  result.x = cos(pitch * rad) * cos(cam.yaw * rad);
+  result.y = sin(pitch * rad);
+  result.z = sin(pitch * rad) * cos(cam.yaw * rad);
   return normalize(result);
 }
 
@@ -43,20 +49,20 @@ GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
   Vec3 u = cross(s, f);                             // 'up'
   GLfloat tempMatrix[4][4];
   tempMatrix[0][0] = s.x;
-  tempMatrix[0][1] = s.y;
-  tempMatrix[0][2] = s.z;
-  tempMatrix[0][3] = 0.0f;
-  tempMatrix[1][0] = u.x;
+  tempMatrix[1][0] = s.y;
+  tempMatrix[2][0] = s.z;
+  tempMatrix[3][0] = 0.0f;
+  tempMatrix[0][1] = u.x;
   tempMatrix[1][1] = u.y;
-  tempMatrix[1][2] = u.z;
-  tempMatrix[1][3] = 0.0f;
-  tempMatrix[2][0] = -f.x;
-  tempMatrix[2][1] = -f.y;
+  tempMatrix[2][1] = u.z;
+  tempMatrix[3][1] = 0.0f;
+  tempMatrix[0][2] = -f.x;
+  tempMatrix[1][2] = -f.y;
   tempMatrix[2][2] = -f.z;
-  tempMatrix[2][3] = 0.0f;
-  tempMatrix[3][0] = -dot(s, eye);
-  tempMatrix[3][1] = -dot(u, eye);
-  tempMatrix[3][2] = dot(f, eye); // GLM says no minus , other's say minus ...
+  tempMatrix[3][2] = 0.0f;
+  tempMatrix[0][3] = -dot(s, eye);
+  tempMatrix[1][3] = -dot(u, eye);
+  tempMatrix[2][3] = dot(f, eye); // GLM says no minus , other's say minus ...
   tempMatrix[3][3] = 1.0f;
   GLfloat *matrix = calloc(1, sizeof(tempMatrix));
   memcpy(matrix, tempMatrix, sizeof(tempMatrix));
@@ -484,6 +490,10 @@ int main() {
   camera.direction = center;
   camera.up = up;
   camera.movement_speed = 0.5f;
+  camera.yaw = -90.0f; // Yaw is initialized to -90.0 degrees since a yaw of 0.0
+                       // results in a direction vector pointing to the right
+                       // (due to how Eular angles work) so we initially rotate
+                       // a bit to the left.
 
   while (!DONE) {
     current_tick = SDL_GetTicks();
@@ -499,7 +509,7 @@ int main() {
         camera.pitch +=
             event.motion.yrel; // These seem reversed for some reason
         camera.yaw += event.motion.xrel;
-        // camera.direction = camera_direction(camera);
+        camera.direction = camera_direction(camera);
         printf("Camera position: x:%f y:%f z:%f\n", camera.position.x,
                camera.position.y, camera.position.z);
         break;
