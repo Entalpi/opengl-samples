@@ -25,16 +25,15 @@ Vec3 camera_move_left(Camera cam) {
 Vec3 camera_direction(Camera cam) {
   float rad = M_PI / 180;
   float pitch = cam.pitch;
-  // if (pitch > 89.0f) {
-  //   pitch = 89.0f;
-  // } else if (pitch < -89.0f) {
-  //   pitch = -89.0f;
-  // }
-  printf("Pitch: %f Yaw: %f\n", pitch, cam.yaw);
   Vec3 result;
-  result.x = cos(pitch * rad) * cos(cam.yaw * rad);
+  result.z = -cos(cam.yaw * rad) * cos(pitch * rad);
   result.y = sin(pitch * rad);
-  result.z = sin(pitch * rad) * cos(cam.yaw * rad);
+  result.x = -sin(cam.yaw * rad) * cos(pitch * rad);
+
+  printf("Pitch: %.2f Yaw: %.2f ", pitch, cam.yaw);
+  printf("Camera position: x:%.2f y:%.2f z:%.2f ", cam.position.x,
+         cam.position.y, cam.position.z);
+  printf(", direction: x:%.2f y:%.2f z:%.2f\n", result.x, result.y, result.z);
   return normalize(result);
 }
 
@@ -510,8 +509,6 @@ int main() {
             event.motion.yrel; // These seem reversed for some reason
         camera.yaw += event.motion.xrel;
         camera.direction = camera_direction(camera);
-        printf("Camera position: x:%f y:%f z:%f\n", camera.position.x,
-               camera.position.y, camera.position.z);
         break;
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
@@ -541,28 +538,21 @@ int main() {
         case SDLK_g:
           scale += 0.1f;
           break;
-        // case SDLK_a:
-        //   cubes[0].position.x -= 0.2f;
-        //   break;
-        // case SDLK_s:
-        //   cubes[0].position.y -= 0.2f;
-        //   break;
-        // case SDLK_d:
-        //   cubes[0].position.x += 0.2f;
-        //   break;
-        // case SDLK_w:
-        //   cubes[0].position.y += 0.2f;
         case SDLK_w:
-          camera.position = camera_move_forward(camera);
+          camera.position =
+              vec_scalar_multiplication(camera_move_forward(camera), delta);
           break;
         case SDLK_a:
-          camera.position = camera_move_left(camera);
+          camera.position =
+              vec_scalar_multiplication(camera_move_left(camera), delta);
           break;
         case SDLK_s:
-          camera.position = camera_move_backward(camera);
+          camera.position =
+              vec_scalar_multiplication(camera_move_backward(camera), delta);
           break;
         case SDLK_d:
-          camera.position = camera_move_right(camera);
+          camera.position =
+              vec_scalar_multiplication(camera_move_right(camera), delta);
           break;
         case SDLK_q:
           cubes[0].position.z -= 0.2f;
@@ -636,9 +626,8 @@ int main() {
         FPSViewRH(camera.position, camera.pitch, camera.yaw);
     glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
 
-    // FIXME: There is something wrong with the view matrix. It is not rendering
-    // as from the camera position in the world.. It seems like the camera is
-    // fixed yet able to move about ..
+    // FIXME: There is something wrong with the translation and movement of the
+    // camera. The rotation works fine though.
 
     for (size_t i = 0; i < numCubes; i++) {
       Cube cube = cubes[i];
