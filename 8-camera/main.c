@@ -11,13 +11,13 @@ Vec3 camera_move_backward(Camera cam) {
 }
 
 Vec3 camera_move_right(Camera cam) {
-  Vec3 movement = cross(cam.direction, cam.up);
+  Vec3 movement = normalize(cross(cam.direction, cam.up));
   return vec_subtraction(
       cam.position, vec_scalar_multiplication(movement, cam.movement_speed));
 }
 
 Vec3 camera_move_left(Camera cam) {
-  Vec3 movement = cross(cam.direction, cam.up);
+  Vec3 movement = normalize(cross(cam.direction, cam.up));
   return vec_addition(cam.position,
                       vec_scalar_multiplication(movement, cam.movement_speed));
 }
@@ -400,7 +400,7 @@ int main() {
   // Projection
   GLuint transform_perspective =
       glGetUniformLocation(shaderProgram, "transform_perspective");
-  GLfloat *transMat_perspective = perspective_matrix(1, -20, 45);
+  GLfloat *transMat_perspective = perspective_matrix(1, -20, 60);
   glUniformMatrix4fv(transform_perspective, 1, GL_FALSE, transMat_perspective);
 
   GLuint texture;
