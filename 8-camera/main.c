@@ -26,9 +26,9 @@ Vec3 camera_direction(Camera cam) {
   float rad = M_PI / 180;
   float pitch = cam.pitch;
   Vec3 result;
-  result.z = -cos(cam.yaw * rad) * cos(pitch * rad);
-  result.y = sin(pitch * rad);
   result.x = -sin(cam.yaw * rad) * cos(pitch * rad);
+  result.y = sin(pitch * rad);
+  result.z = -cos(cam.yaw * rad) * cos(pitch * rad);
 
   printf("Pitch: %.2f Yaw: %.2f ", pitch, cam.yaw);
   printf("Camera position: x:%.2f y:%.2f z:%.2f ", cam.position.x,
@@ -513,23 +513,19 @@ int main() {
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         case SDLK_LEFT:
-          // theta_z += speed;
-          camera.yaw -= 5.1f;
+          camera.yaw -= 5.0f * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_RIGHT:
-          // theta_z -= speed;
-          camera.yaw += 5.0f;
+          camera.yaw += 5.0f * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_UP:
-          // theta_x -= speed;
-          camera.pitch += 5.1f;
+          camera.pitch += 5.0f * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_DOWN:
-          // theta_x += speed;
-          camera.pitch -= 5.1f;
+          camera.pitch -= 5.0f * delta;
           camera.direction = camera_direction(camera);
           break;
         case SDLK_f:
@@ -625,9 +621,6 @@ int main() {
     GLfloat *transMat_camera_view =
         FPSViewRH(camera.position, camera.pitch, camera.yaw);
     glUniformMatrix4fv(camera_view, 1, GL_FALSE, transMat_camera_view);
-
-    // FIXME: There is something wrong with the translation and movement of the
-    // camera. The rotation works fine though.
 
     for (size_t i = 0; i < numCubes; i++) {
       Cube cube = cubes[i];
