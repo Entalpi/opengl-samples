@@ -14,10 +14,6 @@ uniform mat4 transform_translation;
 uniform mat4 transform_scaling;
 
 // View
-uniform mat4 transform_cam_x; // the transformation matrix for x
-uniform mat4 transform_cam_y; // the transformation matrix for y
-uniform mat4 transform_cam_translation;
-
 uniform mat4 camera_view;
 
 // Projection
@@ -28,10 +24,9 @@ out vec2 fTexcoord;
 
 void main() {
   mat4 model = transform_z * transform_y * transform_x * transform_translation * transform_scaling;
-  mat4 view  = transform_cam_x * transform_cam_y * transform_cam_translation;
-  mat4 camera_space = camera_view;
+  mat4 view  = camera_view;
   mat4 projection = transform_perspective;
-  gl_Position = projection * camera_space * model * vec4(position, 1.0f);
+  gl_Position = projection * view * model * vec4(position, 1.0f);
   fColor = vColor;
   fTexcoord = vTexcoord;
 }

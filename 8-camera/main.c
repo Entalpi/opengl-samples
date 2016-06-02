@@ -68,6 +68,7 @@ GLfloat *lookAt(Vec3 eye, Vec3 center, Vec3 up) {
   return matrix;
 }
 
+// Camera combined rotation matrix (y, x) & translation matrix
 GLfloat *FPSViewRH(Vec3 eye, float pitch, float yaw) {
   float rad = M_PI / 180;
   float cosPitch = cos(pitch * rad);
@@ -394,13 +395,6 @@ int main() {
       glGetUniformLocation(shaderProgram, "transform_scaling");
 
   // View / camera space
-  GLuint transform_cam_x =
-      glGetUniformLocation(shaderProgram, "transform_cam_x");
-  GLuint transform_cam_y =
-      glGetUniformLocation(shaderProgram, "transform_cam_y");
-  GLuint transform_cam_translation =
-      glGetUniformLocation(shaderProgram, "transform_cam_translation");
-
   GLuint camera_view = glGetUniformLocation(shaderProgram, "camera_view");
 
   // Projection
@@ -466,21 +460,9 @@ int main() {
 
   GLfloat *transMat_translation;
 
-  // Camera
-  GLfloat *transMat_cam_x;
-  GLfloat *transMat_cam_y;
-  float theta_cam_x = 0.0f;
-  float theta_cam_y = 0.0f;
-
-  GLfloat *transMat_cam_translation;
-  float position_cam_x = 0.0f;
-  float position_cam_y = 0.0f;
-  float position_cam_z = 0.0f;
-
   uint32_t last_tick = 0, current_tick, delta;
 
-  uint32_t speed = 5.0f;
-
+  // Camera
   Camera camera;
   Vec3 eye = {0.0f, 0.0f, 1.0f};     // cam position
   Vec3 center = {0.0f, 0.0f, -1.0f}; // position of where the cam is looking
@@ -499,14 +481,11 @@ int main() {
     last_tick = current_tick;
     delta = SDL_TICKS_PASSED(last_tick, current_tick);
 
-    speed = speed * delta;
-
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
       switch (event.type) {
       case SDL_MOUSEMOTION:
-        camera.pitch +=
-            event.motion.yrel; // These seem reversed for some reason
+        camera.pitch += event.motion.yrel;
         camera.yaw += event.motion.xrel;
         camera.direction = camera_direction(camera);
         break;
@@ -529,7 +508,7 @@ int main() {
           camera.direction = camera_direction(camera);
           break;
         case SDLK_f:
-          scale -= speed;
+          scale -= 0.1f;
           break;
         case SDLK_g:
           scale += 0.1f;
@@ -556,36 +535,6 @@ int main() {
         case SDLK_e:
           cubes[0].position.z += 0.2f;
           break;
-        case SDLK_j:
-          position_cam_x -= 0.5f;
-          break;
-        case SDLK_l:
-          position_cam_x += 0.5f;
-          break;
-        case SDLK_k:
-          position_cam_y -= 0.5f;
-          break;
-        case SDLK_i:
-          position_cam_y += 0.5f;
-          break;
-        case SDLK_u:
-          position_cam_z -= 0.5f;
-          break;
-        case SDLK_o:
-          position_cam_z += 0.5f;
-          break;
-        case SDLK_1:
-          theta_cam_x += 3.0f;
-          break;
-        case SDLK_2:
-          theta_cam_x -= 3.0f;
-          break;
-        case SDLK_3:
-          theta_cam_y += 3.0f;
-          break;
-        case SDLK_4:
-          theta_cam_y -= 3.0f;
-          break;
         }
         break;
       case SDL_QUIT:
@@ -603,16 +552,6 @@ int main() {
     glClearColor(0.4f, 0.3f, 0.7f, 1.0f);
 
     // View
-    transMat_cam_translation =
-        translation_matrix(position_cam_x, position_cam_y, position_cam_z);
-    glUniformMatrix4fv(transform_cam_translation, 1, GL_TRUE,
-                       transMat_cam_translation);
-
-    transMat_cam_x = transformation_matrix_x(theta_cam_x);
-    glUniformMatrix4fv(transform_cam_x, 1, GL_TRUE, transMat_cam_x);
-    transMat_cam_y = transformation_matrix_y(theta_cam_y);
-    glUniformMatrix4fv(transform_cam_y, 1, GL_TRUE, transMat_cam_y);
-
     // GLfloat *transMat_camera_view =
     //     lookAt(camera.position, vec_addition(camera.position,
     //     camera.direction),
