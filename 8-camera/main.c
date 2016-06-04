@@ -376,6 +376,11 @@ int main() {
                         (const void *)offsetof(Vertex, color));
   glEnableVertexAttribArray(colorAttrib);
 
+  GLuint texAttrib = glGetAttribLocation(shaderProgram, "vTexcoord");
+  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (const void *)offsetof(Vertex, texCoord));
+  glEnableVertexAttribArray(texAttrib);
+
   GLuint transform_x = glGetUniformLocation(shaderProgram, "transform_x");
   GLuint transform_y = glGetUniformLocation(shaderProgram, "transform_y");
   GLuint transform_z = glGetUniformLocation(shaderProgram, "transform_z");
@@ -422,10 +427,6 @@ int main() {
   // https://wiki.libsdl.org/SDL_PixelFormatEnum#type
   printf("W: %i  H: %i Format: %u\n", width, height,
          SDL_PIXELTYPE(image->format->format));
-
-  GLuint texAttrib = glGetAttribLocation(shaderProgram, "vTexcoord");
-  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(texAttrib);
 
   GLuint indices[] = {// front
                       0, 1, 2, 2, 3, 0,
