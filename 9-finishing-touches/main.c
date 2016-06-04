@@ -163,9 +163,7 @@ Cube new_cube(Color4 *colors) {
   Point2 texCoords2[] = {tex_e, tex_f, tex_g, tex_h};
   Quad quad2 = new_quad(vertices2, colors, texCoords2);
   cube.quads[1] = quad2;
-
-  cube.position = new_point3(0.0f, 0.0f, -4.0f); // Cube starts in front of cam.
-
+  cube.position = new_point3(0.0f, 0.0f, 0.0f);
   return cube;
 }
 
@@ -225,20 +223,8 @@ GLfloat *quad_to_floats(Quad *quad) {
     floats[i + 7] = vertex.texCoord.x;
     floats[i + 8] = vertex.texCoord.y;
     j++;
-    printf("x: %f y: %f z: %f r: %f g: %f b: %f a: %f\n", vertex.position.x,
-           vertex.position.y, vertex.position.z, vertex.color.a, vertex.color.g,
-           vertex.color.b, vertex.color.a);
   }
   return floats;
-}
-
-Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-  Color4 color;
-  color.r = r;
-  color.g = g;
-  color.b = b;
-  color.a = a;
-  return color;
 }
 
 // Assumes the file exists and will seg. fault otherwise.

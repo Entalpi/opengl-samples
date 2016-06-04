@@ -47,7 +47,14 @@ GLfloat *scaling_matrix(float scale);
 GLfloat *translation_matrix(float x, float y, float z);
 
 // Colors
-Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+  Color4 color;
+  color.r = r;
+  color.g = g;
+  color.b = b;
+  color.a = a;
+  return color;
+}
 Color4 new_color_red() { return new_color(1.0f, 0.0f, 0.0f, 1.0f); }
 Color4 new_color_blue() { return new_color(0.0f, 1.0f, 0.0f, 1.0f); }
 Color4 new_color_green() { return new_color(0.0f, 0.0f, 1.0f, 1.0f); }
