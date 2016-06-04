@@ -39,16 +39,18 @@ Cube new_cube(Color4 *colors);
 Vertex new_vertex(Point3 point, Color4 color, Point2 texCoord);
 Quad new_quad(Point3 *points, Color4 *colors, Point2 *texCoords);
 GLfloat *quad_to_floats(Quad *quad);
-Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
-Color4 new_color_red() { return new_color(1.0f, 0.0f, 0.0f, 1.0f); }
-Color4 new_color_blue() { return new_color(0.0f, 1.0f, 0.0f, 1.0f); }
-Color4 new_color_green() { return new_color(0.0f, 0.0f, 1.0f, 1.0f); }
-Color4 new_color_yellow() { return new_color(1.0f, 1.0f, 0.0f, 1.0f); }
 const GLchar *load_shader_source(char *filename);
 GLfloat *transformation_matrix_x(float theta);
 GLfloat *transformation_matrix_y(float theta);
 GLfloat *transformation_matrix_z(float theta);
 GLfloat *scaling_matrix(float scale);
 GLfloat *translation_matrix(float x, float y, float z);
+
+// Colors
+Color4 new_color(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+Color4 new_color_red() { return new_color(1.0f, 0.0f, 0.0f, 1.0f); }
+Color4 new_color_blue() { return new_color(0.0f, 1.0f, 0.0f, 1.0f); }
+Color4 new_color_green() { return new_color(0.0f, 0.0f, 1.0f, 1.0f); }
+Color4 new_color_yellow() { return new_color(1.0f, 1.0f, 0.0f, 1.0f); }
 
 #endif

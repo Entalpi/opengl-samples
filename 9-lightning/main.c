@@ -294,9 +294,9 @@ int main() {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-  // TODO: Add support for dynamic resizing
   SDL_Window *window = SDL_CreateWindow("", 0, 0, 750, 750, SDL_WINDOW_OPENGL);
   SDL_GLContext *context = SDL_GL_CreateContext(window);
+  atexit(IMG_Quit);
 
   glewExperimental = true;
   glewInit();
@@ -376,6 +376,11 @@ int main() {
                         (const void *)offsetof(Vertex, color));
   glEnableVertexAttribArray(colorAttrib);
 
+  GLuint texAttrib = glGetAttribLocation(shaderProgram, "vTexcoord");
+  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                        (const void *)offsetof(Vertex, texCoord));
+  glEnableVertexAttribArray(texAttrib);
+
   GLuint transform_x = glGetUniformLocation(shaderProgram, "transform_x");
   GLuint transform_y = glGetUniformLocation(shaderProgram, "transform_y");
   GLuint transform_z = glGetUniformLocation(shaderProgram, "transform_z");
@@ -422,10 +427,6 @@ int main() {
   // https://wiki.libsdl.org/SDL_PixelFormatEnum#type
   printf("W: %i  H: %i Format: %u\n", width, height,
          SDL_PIXELTYPE(image->format->format));
-
-  GLuint texAttrib = glGetAttribLocation(shaderProgram, "vTexcoord");
-  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(texAttrib);
 
   GLuint indices[] = {// front
                       0, 1, 2, 2, 3, 0,
@@ -577,7 +578,6 @@ int main() {
     SDL_GL_SwapWindow(window);
   }
 
-  IMG_Quit();
   free(transMat_x);
   free(transMat_y);
   free(transMat_z);
